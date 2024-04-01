@@ -50,7 +50,7 @@ class Streak(models.Model):
         blank=False,
     )
     
-    duration_in_seconds = models.IntegerField(
+    duration_days = models.IntegerField(
         null=False,
         blank=False,
     )
@@ -106,7 +106,7 @@ class UserStreak(models.Model):
     )
 
 class StreakTrack(models.Model):
-    duration_in_seconds = models.IntegerField(
+    duration_days = models.IntegerField(
         null=False,
         blank=False,
     )

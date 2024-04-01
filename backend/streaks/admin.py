@@ -3,13 +3,13 @@ from django.contrib import admin
 from streaks.models import Streak, StreakCategory, StreakTrack, UserStreak, Badge, BadgeRarity
 
 class StreakAdmin(admin.ModelAdmin):
-    list_display = ('name', 'duration_in_seconds')
+    list_display = ('name', 'duration_days')
 
 class StreakCategoryAdmin(admin.ModelAdmin):
     list_display = ('name')
 
 class StreakTrackAdmin(admin.ModelAdmin):
-    list_display = ('duration_in_seconds', 'streak')
+    list_display = ('duration_days', 'streak')
 
 class UserStreakAdmin(admin.ModelAdmin):
     list_display = ('user', 'streak', 'category')

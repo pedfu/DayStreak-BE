@@ -16,42 +16,39 @@ class SimplifiedCategorySerializer(serializers.ModelSerializer):
         model = StreakCategory
         fields = ('id', 'name')
 
-class StreakSerializer(serializers.ModelSerializer):
-    category = CategoriesSerializer()
-
+class StreakSerializer(serializers.Serializer):
     def validate(self, attrs):
-        attrs = super().validate(attrs)
+        name = self.initial_data.get('name')
+        description = self.initial_data.get('description')
+        duration_days = self.initial_data.get('duration_days')
+        category_name = self.initial_data.get('category_name')
 
-        # name
-        # duration
-        # category name
-        if not attrs.get('name', False):
+        if not name:
             raise ValidationError({'name': _('This field is required.')}) 
-        if not attrs.get('duration_in_sec', False):
-            raise ValidationError({'duration_in_sec': _('This field is required.')}) 
-        if not attrs.get('category_name', False):
+        if not description:
+            raise ValidationError({'description': _('This field is required.')}) 
+        if not duration_days:
+            raise ValidationError({'duration_days': _('This field is required.')}) 
+        if not category_name:
             raise ValidationError({'category_name': _('This field is required.')}) 
         
-        return attrs
+        return self.initial_data
 
     def create(self, validated_data):
-        print('serializer')
-        user = self.context['request'].user
+        user = self.context['user']
         streak_name = validated_data.get('name')
         streak_description = validated_data.get('description')
-        streak_duration_in_sec = validated_data.get('duration_in_sec')
+        streak_duration_days = validated_data.get('duration_days')
         category_name = validated_data.get('category_name')
 
         category = StreakCategory.objects.get_or_create(name=category_name, user=user)
-        streak = Streak.objects.create(name=streak_name, duration_in_seconds=streak_duration_in_sec, description=streak_description, created_by=user)
+        streak = Streak.objects.create(name=streak_name, duration_days=streak_duration_days, description=streak_description, created_by=user)
         user_streak = UserStreak.objects.create(user=user, streak=streak, category=category)
 
-        # FINALIZAR
-        return validated_data
+        return self.__class__(user_streak)
     
     class Meta:
-        model = Streak
-        fields = ('id', 'name', 'duration_in_seconds', 'description', 'created_by', 'category')
+        fields = '__all__'
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:

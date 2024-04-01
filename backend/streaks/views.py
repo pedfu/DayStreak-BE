@@ -18,6 +18,18 @@ class UserStreaksView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        user = request.user
+        serializer = StreakSerializer(data=request.data, context={ 'user': user })
+        print('teste')
+        if serializer.is_valid():
+            print('valid')
+            serializer.save()
+        else:
+            print('invalid')
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def get(self, request):
         user = request.user
         user_streaks = UserStreak.objects.filter(user=user)
