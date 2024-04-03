@@ -12,7 +12,6 @@ def send_signup_confirmation_email(email, first_name, last_name, username):
         'email': email,
         'callback': f'{FRONTEND_URL}/login?email={email}'
     }
-    print('teste')
 
     try:
         html_email = render_to_string('account/confirm_email_signup.html', context)

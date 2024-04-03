@@ -106,7 +106,7 @@ class UserStreak(models.Model):
     )
 
 class StreakTrack(models.Model):
-    duration_days = models.IntegerField(
+    duration = models.IntegerField(
         null=False,
         blank=False,
     )
@@ -121,26 +121,14 @@ class StreakTrack(models.Model):
         blank=True,
     )
 
-    streak = models.ForeignKey(
+    user_streak = models.ForeignKey(
         UserStreak,
         related_name='track_user_streak',
         on_delete=models.CASCADE,
     )
 
-    # streak = models.ForeignKey(
-    #     Streak,
-    #     related_name='streak_track',
-    #     on_delete=models.CASCADE,
-    # )
-
-    # user = models.ForeignKey(
-    #     'accounts.User',
-    #     related_name='streak_track_user',
-    #     on_delete=models.CASCADE,
-    # )
-
     description = models.TextField(
         max_length=1024,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
     )

@@ -9,7 +9,7 @@ class StreakCategoryAdmin(admin.ModelAdmin):
     list_display = ('name')
 
 class StreakTrackAdmin(admin.ModelAdmin):
-    list_display = ('duration_days', 'streak')
+    list_display = ('duration', 'user_streak')
 
 class UserStreakAdmin(admin.ModelAdmin):
     list_display = ('user', 'streak', 'category')
