@@ -44,6 +44,12 @@ class BadgeRarity(models.Model):
 
 
 class Streak(models.Model):
+    UPLOAD_TO = 'streak'
+    class StreakStatus(models.TextChoices):
+        ACTIVE = 'active',
+        PAUSED = 'paused',
+        DELETED = 'deleted',
+    
     name = models.TextField(
         max_length=265,
         null=False,
@@ -53,6 +59,12 @@ class Streak(models.Model):
     duration_days = models.IntegerField(
         null=False,
         blank=False,
+    )
+
+    status = models.CharField(
+        max_length=16,
+        choices=StreakStatus.choices,
+        default=StreakStatus.ACTIVE
     )
 
     description = models.TextField(
@@ -67,6 +79,12 @@ class Streak(models.Model):
         on_delete=models.CASCADE,
         null=False,
         blank=False,
+    )
+    
+    background_picture = models.ImageField(
+        upload_to=UploadFileTo(UPLOAD_TO, 'streak-background'),
+        null=True,
+        blank=True,
     )
 
 class StreakCategory(models.Model):
@@ -86,6 +104,10 @@ class StreakCategory(models.Model):
         return self.name
 
 class UserStreak(models.Model):
+    class UserStreakStatus(models.TextChoices):
+        DAY_GONE = 'day_done',
+        PENDING = 'pending',
+        STREAK_OVER = 'streak_over',
 
     user = models.ForeignKey(
         'accounts.User',
@@ -103,6 +125,17 @@ class UserStreak(models.Model):
         StreakCategory,
         related_name='streak_category',
         on_delete=models.CASCADE,
+    )
+    
+    status = models.CharField(
+        max_length=16,
+        choices=UserStreakStatus.choices,
+        default=UserStreakStatus.PENDING
+    )
+    
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
     )
 
 class StreakTrack(models.Model):

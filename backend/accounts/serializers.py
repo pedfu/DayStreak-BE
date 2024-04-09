@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from django.utils.crypto import get_random_string
 
 from accounts.models import *
 from helpers.email import send_signup_confirmation_email
@@ -8,11 +9,13 @@ class SignUpUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
         instance.set_password(validated_data['password'])
-        instance.role = 'admin'
+        instance.role = 'default'
+        instance.email_confirmation_token = get_random_string(length=32)
+        instance.email_confirmed = False
         instance.save()
 
         # ask for email confirmation
-        send_signup_confirmation_email(validated_data['email'], validated_data['first_name'], validated_data['last_name'], validated_data['username'])
+        send_signup_confirmation_email(validated_data['email'], validated_data['first_name'], validated_data['last_name'], validated_data['username'], instance.email_confirmation_token)
 
         return validated_data
     

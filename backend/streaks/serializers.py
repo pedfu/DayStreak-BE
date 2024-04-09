@@ -90,6 +90,14 @@ class UserStreakSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()
     name = SerializerMethodField()
     category = SimplifiedCategorySerializer()
+    duration_days = SerializerMethodField()
+
+    description = SerializerMethodField()
+    created_by = SerializerMethodField()
+    user_streak_id = SerializerMethodField()
+    status = SerializerMethodField()
+    background_picture = SerializerMethodField()
+    max_streak = SerializerMethodField()
 
     def get_id(self, instance: UserStreak):
         return instance.streak.id
@@ -97,9 +105,32 @@ class UserStreakSerializer(serializers.ModelSerializer):
     def get_name(self, instance: UserStreak):
         return instance.streak.name
 
+    def get_duration_days(self, instance: UserStreak):
+        return instance.streak.duration_days
+
+    def get_description(self, instance: UserStreak):
+        return instance.streak.description
+
+    def get_created_by(self, instance: UserStreak):
+        return instance.streak.created_by.username
+
+    def get_user_streak_id(self, instance: UserStreak):
+        return instance.id
+
+    def get_status(self, instance: UserStreak):
+        return instance.status
+
+    def get_background_picture(self, instance: UserStreak):
+        return 'https://img.freepik.com/free-vector/flat-design-collage-background_23-2149545328.jpg?w=1060&t=st=1712496146~exp=1712496746~hmac=a8ec74df525d6564e54e06c786bcada19a7a072fda14134f2f7deae5c9ac36fa'
+        # return instance.streak.background_picture
+
+    def get_max_streak(self, instance: UserStreak):
+        # FAZER DPS
+        return 1
+
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'category')
+        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'max_streak')
 
 class UserStreakCountSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()

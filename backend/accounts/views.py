@@ -1,5 +1,4 @@
 from .models import *
-from streaks.models import UserStreak, Streak
 from .serializers import *
 from streaks.serializers import BadgeSerializer, StreakSerializer
 
@@ -15,11 +14,17 @@ class SignUpView(APIView):
         serializer = SignUpUserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            user = User.objects.get(username=serializer.data['username'])
-            token, _ = Token.objects.get_or_create(user=user)
-            token_user_serializer = TokenUserSerializer(token)
-            return Response(token_user_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ConfirmEmailView(APIView):
+    def get(self, request, token):
+        user = User.objects.filter(email_confirmation_token=token).first()
+        if user:
+            user.email_confirmed = True
+            user.email_confirmation_token = None
+            return Response(status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         
 class LoginView(APIView):
     def post(self, request):
@@ -29,6 +34,8 @@ class LoginView(APIView):
             password = serializer.validated_data.get('password')
             user = authenticate(request, username=username_or_email, password=password)
             if user:
+                if user.email_confirmed == False:
+                    return Response({'error': 'You need to confirm your email'}, status=status.HTTP_400_BAD_REQUEST)
                 token, _ = Token.objects.get_or_create(user=user)
                 token_user_serializer = TokenUserSerializer(token)
                 return Response(token_user_serializer.data, status=status.HTTP_201_CREATED)

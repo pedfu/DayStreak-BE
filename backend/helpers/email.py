@@ -4,13 +4,13 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.utils.translation import gettext_lazy as _
 
-def send_signup_confirmation_email(email, first_name, last_name, username):
+def send_signup_confirmation_email(email, first_name, last_name, username, email_token):
     name = first_name + ' ' + last_name
     context = {
         'name': name,
         'username': username,
         'email': email,
-        'callback': f'{FRONTEND_URL}/login?email={email}'
+        'callback': f'{FRONTEND_URL}/confirm-email?token={email_token}'
     }
 
     try:

@@ -97,11 +97,23 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
 
-    app_version = models.CharField(
+    app_language = models.CharField(
         max_length=6,
         null=False,
         blank=False,
         default='EN',
+    )
+
+    email_confirmed = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+    )
+
+    email_confirmation_token = models.CharField(
+        max_length=32,
+        null=True,
+        blank=True,
     )
 
     badges = models.ManyToManyField(
