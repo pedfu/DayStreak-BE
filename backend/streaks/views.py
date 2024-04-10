@@ -13,6 +13,18 @@ class CategoriesViewSet(generics.ListCreateAPIView):
     queryset = StreakCategory.objects.all()
     serializer_class = CategoriesSerializer
 
+class CategoryViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = CategorySerializer(data=request.data, context={ 'user': user })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 class UserStreaksView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

@@ -2,6 +2,7 @@ from .models import *
 from .serializers import *
 from streaks.serializers import BadgeSerializer, StreakSerializer
 
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -12,17 +13,23 @@ from django.contrib.auth import authenticate
 class SignUpView(APIView):
     def post(self, request):
         serializer = SignUpUserSerializer(data=request.data)
+        user_not_confirmed = User.objects.filter(email=request.data.get('email'), email_confirmed=False)
+        user_not_confirmed.delete()
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ConfirmEmailView(APIView):
-    def get(self, request, token):
-        user = User.objects.filter(email_confirmation_token=token).first()
+    def get(self, request):
+        token = request.query_params.get('token')
+        user = User.objects.filter(email_confirmation_token=token, email_confirmed=False).first()
         if user:
             user.email_confirmed = True
             user.email_confirmation_token = None
+            user.save()
+            # ADICIONAR RETORN HTML
+            # MUDAR URL PARA REMOVER API/V1
             return Response(status=status.HTTP_200_OK)
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -32,7 +39,10 @@ class LoginView(APIView):
         if serializer.is_valid():
             username_or_email = serializer.validated_data.get('username_or_email')
             password = serializer.validated_data.get('password')
-            user = authenticate(request, username=username_or_email, password=password)
+
+            temp_user = User.objects.filter(Q(username=username_or_email) | Q(email=username_or_email)).first()
+            username = temp_user.username if temp_user else ''
+            user = authenticate(request, username=username, password=password)
             if user:
                 if user.email_confirmed == False:
                     return Response({'error': 'You need to confirm your email'}, status=status.HTTP_400_BAD_REQUEST)

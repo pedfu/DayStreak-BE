@@ -289,3 +289,21 @@ class UserStreakDetailsCountSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserStreak
         fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'day_streak', 'tracks')
+
+class CategorySerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        name = self.initial_data.get('name')
+
+        if not name:
+            raise ValidationError({'name': _('This field is required.')}) 
+        return self.initial_data
+
+    def create(self, validated_data):
+        user = self.context['user']
+        category_name = (validated_data.get('name')).lower()
+        category, _ = StreakCategory.objects.get_or_create(name=category_name, user=user)
+        return category
+
+    class Meta:
+        model = StreakCategory
+        fields = ('id', 'name')
