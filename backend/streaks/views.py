@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from rest_framework import generics
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.http import QueryDict
 
 from .models import *
 from .serializers import *
@@ -25,15 +27,44 @@ class CategoryViewSet(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        user = request.user
+        categories = StreakCategory.objects.filter(user=user)
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class CategoryDeleteViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        print('tentando deletar', id)
+        user = request.user
+        category = StreakCategory.objects.filter(id=id).first()
+        if category is not None and category.user.id == user.id:
+            user_streaks = UserStreak.objects.filter(category__id=category.id, user__id=user.id)
+            streaks_id = user_streaks.values_list('streak__id', flat=True)
+            Streak.objects.filter(id__in=streaks_id).delete()
+            user_streaks.delete()
+            category.delete()
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_400_BAD_REQUEST)
+
 class UserStreaksView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        serializer = StreakSerializer(data=request.data, context={ 'user': user })
+        data = request.data.get('data')
+        background = request.data.get('background')
+        if isinstance(data, QueryDict):
+            data = data.dict()
+        else:
+            data = json.loads(data)
+        serializer = StreakSerializer(data=data, context={ 'user': user, 'background': background })
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()       
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get(self, request):
@@ -41,6 +72,14 @@ class UserStreaksView(APIView):
         user_streaks = UserStreak.objects.filter(user=user)
         serializer = UserStreakSerializer(user_streaks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, id):
+        user = request.user
+        streak = Streak.objects.filter(id=id).first()
+        if streak is not None and user == streak.created_by:
+            streak.delete()
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+        return Response(None, status=status.HTTP_400_BAD_REQUEST)
 
 class StreakTrackView(APIView):
     authentication_classes = [TokenAuthentication]

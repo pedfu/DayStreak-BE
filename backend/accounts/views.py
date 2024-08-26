@@ -88,6 +88,13 @@ class UserNotificationsView(APIView):
         serializer = NotificationsSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def post(self, request):
+        user = request.user
+        serializer = NotificationsSerializer(data=request.data, context={ 'user': user })
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
 class ReadNotificationView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Group, Permission
 from helpers.s3 import UploadFileTo
+from django.utils import timezone
 
 from streaks.models import Badge, Streak
 
@@ -182,4 +183,15 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        null=False,
+        default=timezone.now
+    )
+
+    updated_at = models.DateTimeField(
+        null=True,
+        blank=False,
+        default=None
     )

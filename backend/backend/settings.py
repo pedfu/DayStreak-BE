@@ -16,15 +16,15 @@ from os import path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-FRONTEND_URL = 'https://d2f2-189-123-96-242.ngrok-free.app'
+FRONTEND_URL = 'https://3554-189-123-99-176.ngrok-free.app'
 EMAIL_SENDER = 'from@example.com'
-AUTH_USER = ''
-AUTH_PASSWORD = ''
+AUTH_USER = 'be52c0165cb93d'
+AUTH_PASSWORD = 'b71c618bd9ab09'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = 'be52c0165cb93d'
+EMAIL_HOST_PASSWORD = 'b71c618bd9ab09'
 EMAIL_PORT = '2525'
 
 # Quick-start development settings - unsuitable for production

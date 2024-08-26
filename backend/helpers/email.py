@@ -14,6 +14,7 @@ def send_signup_confirmation_email(email, first_name, last_name, username, email
     }
 
     try:
+        print('sending email')
         html_email = render_to_string('account/confirm_email_signup.html', context)
         send_mail(
             subject=_('DayStreak - Email confirmation'),
@@ -23,5 +24,7 @@ def send_signup_confirmation_email(email, first_name, last_name, username, email
             fail_silently=False,
             html_message=html_email,
         )
+        
+        print('email sent')
     except Exception as e:
         print('error', e)

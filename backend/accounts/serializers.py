@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from django.utils.crypto import get_random_string
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import *
 from helpers.email import send_signup_confirmation_email
@@ -49,6 +50,39 @@ class UserBadgesSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'icon', 'rarity')
         
 class NotificationsSerializer(serializers.ModelSerializer):
+
+    def validate(self, attrs):
+        title = self.initial_data.get('title')
+        message = self.initial_data.get('message')
+
+        if not title:
+            raise ValidationError({'title': _('This field is required.')}) 
+        if not message:
+            raise ValidationError({'message': _('This field is required.')}) 
+        return self.initial_data
+
+    def create(self, validated_data):
+        user = self.context['user']
+        type = validated_data.get('type') or 'default'
+
+        badge = None
+        streak = None
+        if (validated_data.get('badge') != None):
+            badge = Badge.objects.filter(id=validated_data.get('badge'))
+        if (validated_data.get('streak') != None):
+            streak = Streak.objects.filter(id=validated_data.get('streak'))
+
+        notification = Notification.objects.create(
+            title=validated_data.get('title'), 
+            message=validated_data.get('message'),
+            read=False,
+            type=type,
+            badge=badge,
+            streak=streak,
+            user=user
+        )
+        return notification
+
     class Meta:
         model = Notification
-        fields = ('id', 'title', 'message', 'type', 'read', 'badge', 'streak')
+        fields = ('id', 'title', 'message', 'type', 'read', 'badge', 'streak', 'created_at')

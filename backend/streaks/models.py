@@ -57,8 +57,19 @@ class Streak(models.Model):
     )
     
     duration_days = models.IntegerField(
+        null=True,
+        blank=False,
+    )
+    
+    min_time_per_day = models.IntegerField(
         null=False,
         blank=False,
+        default=0
+    )
+
+    end_date = models.DateField(
+        null=True,
+        blank=False
     )
 
     status = models.CharField(
@@ -81,10 +92,21 @@ class Streak(models.Model):
         blank=False,
     )
     
+    local_background_picture = models.TextField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+    
     background_picture = models.ImageField(
         upload_to=UploadFileTo(UPLOAD_TO, 'streak-background'),
         null=True,
         blank=True,
+    )
+
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
     )
 
 class StreakCategory(models.Model):

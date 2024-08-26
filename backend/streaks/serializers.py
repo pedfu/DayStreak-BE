@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from django.utils import timezone
 from datetime import timedelta
+import json
 
 from streaks.models import *
 
@@ -24,35 +25,51 @@ class StreakSerializer(serializers.ModelSerializer):
     user_streak_id = SerializerMethodField()
     description = SerializerMethodField()
     duration_days = SerializerMethodField()
+    background_picture = SerializerMethodField()
+    local_background_picture = SerializerMethodField()
 
     def validate(self, attrs):
+        background = self.context.get('background') 
+
         name = self.initial_data.get('name')
         description = self.initial_data.get('description')
-        duration_days = self.initial_data.get('duration_days')
-        category_name = self.initial_data.get('category_name')
+        category_id = self.initial_data.get('category_id')
 
         if not name:
             raise ValidationError({'name': _('This field is required.')}) 
         if not description:
             raise ValidationError({'description': _('This field is required.')}) 
-        if not duration_days:
-            raise ValidationError({'duration_days': _('This field is required.')}) 
-        if not category_name:
-            raise ValidationError({'category_name': _('This field is required.')}) 
+        if not category_id:
+            raise ValidationError({'category_id': _('This field is required.')}) 
+        # if not background:
+        #     raise ValidationError({'background': _('This field is required.')}) 
         
+        self.initial_data['background'] = background       
         return self.initial_data
 
     def create(self, validated_data):
         user = self.context['user']
         streak_name = validated_data.get('name')
-        streak_description = validated_data.get('description')
+        streak_description = validated_data.get('description') or None
         streak_duration_days = validated_data.get('duration_days')
-        category_name = validated_data.get('category_name')
+        end_date = validated_data.get('end_date')
+        background = validated_data.get('background')
+        category_id = validated_data.get('category_id')
+        min_time_per_day = validated_data.get('min_time_per_day') or 0
+        local_background_picture = validated_data.get('local_background_picture')
 
-        category, _ = StreakCategory.objects.get_or_create(name=category_name, user=user)
-        streak, _ = Streak.objects.get_or_create(name=streak_name, duration_days=streak_duration_days, description=streak_description, created_by=user)
-        user_streak, _ = UserStreak.objects.get_or_create(user=user, streak=streak, category=category)
-
+        category = StreakCategory.objects.filter(id=category_id).first()
+        streak = Streak.objects.create(
+            name=streak_name, 
+            duration_days=streak_duration_days, 
+            description=streak_description, 
+            end_date=end_date,
+            min_time_per_day=min_time_per_day,
+            background_picture=background,
+            local_background_picture=local_background_picture,
+            created_by=user)
+        print('created streak', streak, streak.local_background_picture, local_background_picture)
+        user_streak = UserStreak.objects.create(user=user, streak=streak, category=category)
         return user_streak
     
     def get_category(self, obj):
@@ -77,9 +94,17 @@ class StreakSerializer(serializers.ModelSerializer):
     def get_user_streak_id(self, instance: UserStreak):
         return instance.id
 
+    def get_local_background_picture(self, instance: UserStreak):
+        print('streak', instance.streak.local_background_picture)
+        return instance.streak.local_background_picture
+
+    def get_background_picture(self, instance: UserStreak):
+        background_picture = instance.streak.background_picture or None
+        return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
+    
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category')
+        fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'local_background_picture', 'background_picture')
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,6 +122,7 @@ class UserStreakSerializer(serializers.ModelSerializer):
     user_streak_id = SerializerMethodField()
     status = SerializerMethodField()
     background_picture = SerializerMethodField()
+    local_background_picture = SerializerMethodField()
     max_streak = SerializerMethodField()
 
     def get_id(self, instance: UserStreak):
@@ -121,8 +147,12 @@ class UserStreakSerializer(serializers.ModelSerializer):
         return instance.status
 
     def get_background_picture(self, instance: UserStreak):
-        return 'https://img.freepik.com/free-vector/flat-design-collage-background_23-2149545328.jpg?w=1060&t=st=1712496146~exp=1712496746~hmac=a8ec74df525d6564e54e06c786bcada19a7a072fda14134f2f7deae5c9ac36fa'
-        # return instance.streak.background_picture
+        background_picture = instance.streak.background_picture or None
+        return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
+
+    def get_local_background_picture(self, instance: UserStreak):
+        print('streak', instance.streak.local_background_picture)
+        return instance.streak.local_background_picture
 
     def get_max_streak(self, instance: UserStreak):
         # FAZER DPS
@@ -130,7 +160,7 @@ class UserStreakSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'max_streak')
+        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'local_background_picture', 'max_streak')
 
 class UserStreakCountSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()
