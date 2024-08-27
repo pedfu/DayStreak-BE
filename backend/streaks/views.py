@@ -38,7 +38,6 @@ class CategoryDeleteViewSet(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        print('tentando deletar', id)
         user = request.user
         category = StreakCategory.objects.filter(id=id).first()
         if category is not None and category.user.id == user.id:
@@ -47,6 +46,21 @@ class CategoryDeleteViewSet(APIView):
             Streak.objects.filter(id__in=streaks_id).delete()
             user_streaks.delete()
             category.delete()
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_400_BAD_REQUEST)
+    
+class StreakDeleteViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        user = request.user
+        streak = Streak.objects.filter(id=id).first()
+        if streak is not None:
+            user_streaks = UserStreak.objects.filter(streak__id=streak.id, user__id=user.id)
+            user_streaks.delete()
+            if streak.created_by.id == user.id:
+                streak.delete()
             return Response(True, status=status.HTTP_200_OK)
         return Response(False, status=status.HTTP_400_BAD_REQUEST)
 

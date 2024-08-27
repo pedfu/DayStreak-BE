@@ -107,3 +107,12 @@ class ReadNotificationView(APIView):
             notification.save()
             return Response(status=status.HTTP_200_OK)
         return Response({ 'error': 'Notification not found' }, status=status.HTTP_404_NOT_FOUND)
+    
+class ClearNotificationView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        user = request.user        
+        Notification.objects.filter(user=user).delete() # maybe only set deleted = True in future?
+        return Response(status=status.HTTP_200_OK)
