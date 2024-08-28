@@ -29,6 +29,7 @@ class StreakSerializer(serializers.ModelSerializer):
     local_background_picture = SerializerMethodField()
 
     def validate(self, attrs):
+        print('validate')
         background = self.context.get('background') 
 
         name = self.initial_data.get('name')
@@ -68,9 +69,27 @@ class StreakSerializer(serializers.ModelSerializer):
             background_picture=background,
             local_background_picture=local_background_picture,
             created_by=user)
-        print('created streak', streak, streak.local_background_picture, local_background_picture)
         user_streak = UserStreak.objects.create(user=user, streak=streak, category=category)
         return user_streak
+    
+    def update(self, instance, validated_data):
+        # Update existing streak and user_streak
+        instance.streak.name = validated_data.get('name', instance.streak.name)
+        instance.streak.description = validated_data.get('description', instance.streak.description)
+        instance.streak.duration_days = validated_data.get('duration_days', instance.streak.duration_days)
+        instance.streak.background_picture = validated_data.get('background', instance.streak.background_picture)
+        instance.streak.local_background_picture = validated_data.get('local_background_picture', instance.streak.local_background_picture)
+        
+        instance.streak.save()
+
+        # Update the category if provided
+        category_id = validated_data.get('category_id')
+        if category_id:
+            category = StreakCategory.objects.filter(id=category_id).first()
+            instance.category = category
+        
+        instance.save()
+        return instance
     
     def get_category(self, obj):
         if 'data' in self.context:

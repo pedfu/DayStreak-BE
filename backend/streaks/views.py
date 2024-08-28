@@ -80,6 +80,20 @@ class UserStreaksView(APIView):
         if serializer.is_valid():
             serializer.save()       
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, id):
+        try:
+            data = json.loads(request.data.get('data'))
+            user = request.user
+            streak = Streak.objects.get(id=id)
+            user_streak = UserStreak.objects.get(streak__id=streak.id, user__id=user.id)
+            serializer = StreakSerializer(user_streak, data=data, context={'user': request.user, 'background': request.data.get('background')})
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print('error', e)
 
     def get(self, request):
         user = request.user
@@ -94,6 +108,18 @@ class UserStreaksView(APIView):
             streak.delete()
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         return Response(None, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserStreakDetailView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, id):
+        user_streak = UserStreak.objects.get(id=id)
+        serializer = StreakSerializer(user_streak, data=request.data, context={'user': request.user, 'background': request.data.get('background')})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class StreakTrackView(APIView):
     authentication_classes = [TokenAuthentication]

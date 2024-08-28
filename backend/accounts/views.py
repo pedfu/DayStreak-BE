@@ -99,7 +99,7 @@ class ReadNotificationView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, id):
+    def post(self, request, id):
         user = request.user        
         notification = Notification.objects.filter(id=id, user=user).first()
         if notification:
@@ -107,6 +107,18 @@ class ReadNotificationView(APIView):
             notification.save()
             return Response(status=status.HTTP_200_OK)
         return Response({ 'error': 'Notification not found' }, status=status.HTTP_404_NOT_FOUND)
+    
+class ReadAllNotificationView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user        
+        notification = Notification.objects.filter(user=user)
+        for n in notification:
+            n.read = True
+            n.save()
+        return Response(status=status.HTTP_200_OK)
     
 class ClearNotificationView(APIView):
     authentication_classes = [TokenAuthentication]
