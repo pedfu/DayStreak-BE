@@ -193,39 +193,32 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         streak_id = self.initial_data.get('streak_id')
-        duration = self.initial_data.get('duration')
-        start_date = self.initial_data.get('start_date')
-        end_date = self.initial_data.get('end_date')
+        minutes = self.initial_data.get('minutes')
 
         if not streak_id:
             raise ValidationError({'streak_id': _('This field is required.')}) 
-        if not duration:
-            raise ValidationError({'duration': _('This field is required.')}) 
-        if not start_date:
-            raise ValidationError({'start_date': _('This field is required.')}) 
-        if not end_date:
-            raise ValidationError({'end_date': _('This field is required.')}) 
+        if not minutes:
+            raise ValidationError({'minutes': _('This field is required.')})
         
         return self.initial_data
 
     def create(self, validated_data):
         user = self.context['user']
         streak_id = validated_data['streak_id']
-        duration = validated_data['duration']
-        start_date = validated_data['start_date']
-        end_date = validated_data['end_date']
-        description = validated_data['description']
+        minutes = validated_data['minutes']
+        date = validated_data.get('date')
+        description = validated_data.get('description')
 
         streak = Streak.objects.filter(id=streak_id).first()
         user_streak = UserStreak.objects.filter(streak=streak, user=user).first()
-        # if user_streak:
-            # track = StreakTrack.objects.create(
-            #     duration=duration,
-            #     start_datetime=start_date,
-            #     end_datetime=end_date,
-            #     user_streak=user_streak,
-            #     description=description
-            # )
+        if user_streak:
+            track = StreakTrack.objects.create(
+                minutes=minutes,
+                date=date,
+                user_streak=user_streak,
+                description=description
+            )
+            track.save()
         return user_streak
     
     def get_category(self, obj):
@@ -251,21 +244,21 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
         return instance.id
     
     def get_day_streak(self, instance: UserStreak):
-        tracks = StreakTrack.objects.filter(user_streak=instance).order_by('-start_datetime')
-        current_date = tracks.first().start_datetime.date()
+        tracks = StreakTrack.objects.filter(user_streak=instance).order_by('-date')
+        current_date = tracks.first().date
         streak_count = 1 if len(tracks) > 0 else 0
 
         for track in tracks[1:]:
-            if track.start_datetime.date() == current_date:
+            if track.date == current_date:
                 continue
-            if current_date - track.start_datetime.date() == timedelta(days=1):
+            if current_date - track.date == timedelta(days=1):
                 streak_count += 1
             else:
                 break
         return streak_count
     
     def get_tracks(self, instance: UserStreak):
-        streak_serializer = StreakTrackSerializer(data=StreakTrack.objects.filter(user_streak=instance).order_by('-start_datetime'), many=True)
+        streak_serializer = StreakTrackSerializer(data=StreakTrack.objects.filter(user_streak=instance).order_by('-date'), many=True)
         if streak_serializer.is_valid():
             return streak_serializer.data
         else:
@@ -278,7 +271,7 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
 class StreakTrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = StreakTrack
-        fields = ('id', 'start_datetime', 'end_datetime', 'duration', 'description')
+        fields = ('id', 'date', 'minutes', 'description')
 
 class UserStreakDetailsCountSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()
@@ -313,23 +306,23 @@ class UserStreakDetailsCountSerializer(serializers.ModelSerializer):
         return instance.id
     
     def get_day_streak(self, instance: UserStreak):
-        tracks = StreakTrack.objects.filter(user_streak=instance).order_by('-start_datetime')
+        tracks = StreakTrack.objects.filter(user_streak=instance).order_by('-date')
         if not tracks.first():
             return 0
-        current_date = tracks.first().start_datetime.date()
+        current_date = tracks.first().date
         streak_count = 1 if len(tracks) > 0 else 0
 
         for track in tracks[1:]:
-            if track.start_datetime.date() == current_date:
+            if track.date == current_date:
                 continue
-            if current_date - track.start_datetime.date() == timedelta(days=1):
+            if current_date - track.date == timedelta(days=1):
                 streak_count += 1
             else:
                 break
         return streak_count
     
     def get_tracks(self, instance: UserStreak):
-        streak_serializer = StreakTrackSerializer(data=StreakTrack.objects.filter(user_streak=instance).order_by('-start_datetime'), many=True)
+        streak_serializer = StreakTrackSerializer(data=StreakTrack.objects.filter(user_streak=instance).order_by('-date'), many=True)
         if streak_serializer.is_valid():
             return streak_serializer.data
         else:

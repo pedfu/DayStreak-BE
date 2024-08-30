@@ -11,4 +11,5 @@ urlpatterns = [
     path('streaks/<int:id>/', views.UserStreaksView.as_view(), name='streak-edit'),
     path('category/', views.CategoryViewSet.as_view(), name='category'),
     path('streaks/<int:id>/track/', views.StreakTrackDetailsView.as_view(), name='streak-track-details'),
+    path('streaks/<int:id>/complete-day/', views.StreakTrackView.as_view(), name='streak-track-complete-days'),
 ]

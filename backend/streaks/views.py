@@ -125,9 +125,11 @@ class StreakTrackView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def post(self, request, id):
         user = request.user
-        serializer = UserStreakCountSerializer(data=request.data, context={ 'user': user })
+        data = request.data
+        data['streak_id'] = id
+        serializer = UserStreakCountSerializer(data=data, context={ 'user': user })
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

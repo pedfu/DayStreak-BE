@@ -161,17 +161,12 @@ class UserStreak(models.Model):
     )
 
 class StreakTrack(models.Model):
-    duration = models.IntegerField(
+    minutes = models.IntegerField(
         null=False,
         blank=False,
     )
 
-    start_datetime = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
-
-    end_datetime = models.DateTimeField(
+    date = models.DateField(
         null=True,
         blank=True,
     )
