@@ -170,7 +170,6 @@ class UserStreakSerializer(serializers.ModelSerializer):
         return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
 
     def get_local_background_picture(self, instance: UserStreak):
-        print('streak', instance.streak.local_background_picture)
         return instance.streak.local_background_picture
 
     def get_max_streak(self, instance: UserStreak):
@@ -185,12 +184,15 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()
     name = SerializerMethodField()
     category = SerializerMethodField()
-    user_streak_id = SerializerMethodField()
-    description = SerializerMethodField()
     duration_days = SerializerMethodField()
-    day_streak = SerializerMethodField()
-    tracks = SerializerMethodField()
-
+    description = SerializerMethodField()
+    created_by = SerializerMethodField()
+    user_streak_id = SerializerMethodField()
+    status = SerializerMethodField()
+    background_picture = SerializerMethodField()
+    local_background_picture = SerializerMethodField()
+    max_streak = SerializerMethodField()
+        
     def validate(self, attrs):
         streak_id = self.initial_data.get('streak_id')
         minutes = self.initial_data.get('minutes')
@@ -221,12 +223,18 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
             track.save()
         return user_streak
     
+    def get_status(self, instance: UserStreak):
+        return instance.status
+    
     def get_category(self, obj):
         if 'data' in self.context:
             category_data = self.context['data'].get('category')
             if category_data:
                 return category_data
         return SimplifiedCategorySerializer(obj.category).data
+    
+    def get_created_by(self, instance: UserStreak):
+        return instance.streak.created_by.username
     
     def get_id(self, instance: UserStreak):
         return instance.streak.id
@@ -242,31 +250,22 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
 
     def get_user_streak_id(self, instance: UserStreak):
         return instance.id
-    
-    def get_day_streak(self, instance: UserStreak):
-        tracks = StreakTrack.objects.filter(user_streak=instance).order_by('-date')
-        current_date = tracks.first().date
-        streak_count = 1 if len(tracks) > 0 else 0
 
-        for track in tracks[1:]:
-            if track.date == current_date:
-                continue
-            if current_date - track.date == timedelta(days=1):
-                streak_count += 1
-            else:
-                break
-        return streak_count
-    
-    def get_tracks(self, instance: UserStreak):
-        streak_serializer = StreakTrackSerializer(data=StreakTrack.objects.filter(user_streak=instance).order_by('-date'), many=True)
-        if streak_serializer.is_valid():
-            return streak_serializer.data
-        else:
-            return []
+    def get_local_background_picture(self, instance: UserStreak):
+        return instance.streak.local_background_picture
 
+    def get_background_picture(self, instance: UserStreak):
+        background_picture = instance.streak.background_picture or None
+        return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
+
+    def get_max_streak(self, instance: UserStreak):
+        # FAZER DPS
+        return 1
+    
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'day_streak', 'tracks')
+        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'local_background_picture', 'max_streak')
+        # fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'day_streak', 'tracks')
 
 class StreakTrackSerializer(serializers.ModelSerializer):
     class Meta:
