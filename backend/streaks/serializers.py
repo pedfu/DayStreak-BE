@@ -29,7 +29,6 @@ class StreakSerializer(serializers.ModelSerializer):
     local_background_picture = SerializerMethodField()
 
     def validate(self, attrs):
-        print('validate')
         background = self.context.get('background') 
 
         name = self.initial_data.get('name')
@@ -114,7 +113,6 @@ class StreakSerializer(serializers.ModelSerializer):
         return instance.id
 
     def get_local_background_picture(self, instance: UserStreak):
-        print('streak', instance.streak.local_background_picture)
         return instance.streak.local_background_picture
 
     def get_background_picture(self, instance: UserStreak):
