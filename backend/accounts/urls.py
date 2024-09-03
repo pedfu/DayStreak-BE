@@ -48,4 +48,9 @@ urlpatterns = [
         views.ClearNotificationView.as_view(),
         name='clear-notifications'    
     ),
+    path(
+        'user/profile-picture/',
+        views.UpdateUserProfilePicture.as_view(),
+        name='profile-picture'    
+    ),
 ]

@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
+from django.http import QueryDict
 
 class SignUpView(APIView):
     def post(self, request):
@@ -75,6 +76,24 @@ class UserBadgesView(APIView):
         badges = user.badges.all()
 
         serializer = BadgeSerializer(badges, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UpdateUserProfilePicture(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        if isinstance(request.data, QueryDict):
+            data = request.data.dict()
+        else:
+            data = request.data
+            
+        user = User.objects.get(id=request.user.id)
+
+        serializer = UserProfilePictureSerializer(user, data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class UserNotificationsView(APIView):

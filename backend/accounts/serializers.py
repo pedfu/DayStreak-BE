@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from django.utils.crypto import get_random_string
 from rest_framework.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from accounts.models import *
 from helpers.email import send_signup_confirmation_email
@@ -48,6 +49,24 @@ class UserBadgesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
         fields = ('id', 'name', 'icon', 'rarity')
+
+class UserProfilePictureSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.ImageField(required=True)
+
+    def validate(self, attrs):
+        if not attrs.get('profile_picture'):
+            return ValidationError({'profile_picture': _('This field is required.')})
+        return self.initial_data
+        
+    def update(self, instance, validated_data):
+        print(validated_data.get('profile_picture'))
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.save()
+        return instance
+      
+    class Meta:
+        model = User
+        fields = ['profile_picture']  
         
 class NotificationsSerializer(serializers.ModelSerializer):
 
