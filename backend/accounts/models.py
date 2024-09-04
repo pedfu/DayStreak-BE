@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Group, Permission
-from helpers.s3 import UploadFileTo
+from helpers.s3 import UploadProfilePictureTo, OverwriteStorage
 from django.utils import timezone
 
 from streaks.models import Badge, Streak
@@ -78,9 +78,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     profile_picture = models.ImageField(
-        upload_to=UploadFileTo(UPLOAD_TO, 'profile-picture'),
+        upload_to=UploadProfilePictureTo(UPLOAD_TO, 'profile-picture'),
         null=True,
         blank=True,
+        storage=OverwriteStorage()
     )
 
     uuid = models.UUIDField(
