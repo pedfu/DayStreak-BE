@@ -59,7 +59,6 @@ class UserProfilePictureSerializer(serializers.ModelSerializer):
         return self.initial_data
         
     def update(self, instance, validated_data):
-        print(validated_data.get('profile_picture'))
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.save()
         return instance
