@@ -143,7 +143,7 @@ class ClearNotificationView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, id):
-        user = request.user        
+    def post(self, request):
+        user = request.user       
         Notification.objects.filter(user=user).delete() # maybe only set deleted = True in future?
         return Response(status=status.HTTP_200_OK)
