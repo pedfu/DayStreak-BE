@@ -78,7 +78,7 @@ class UserBadgesView(APIView):
         serializer = BadgeSerializer(badges, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class UpdateUserProfilePicture(APIView):
+class UpdateUserProfilePictureView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -113,6 +113,15 @@ class UserNotificationsView(APIView):
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class UserView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = User.objects.filter(id=request.user.id)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class ReadNotificationView(APIView):
     authentication_classes = [TokenAuthentication]

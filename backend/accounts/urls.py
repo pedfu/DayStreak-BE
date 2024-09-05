@@ -50,7 +50,12 @@ urlpatterns = [
     ),
     path(
         'user/profile-picture/',
-        views.UpdateUserProfilePicture.as_view(),
+        views.UpdateUserProfilePictureView.as_view(),
         name='profile-picture'    
+    ),
+    path(
+        'user/',
+        views.UserView.as_view(),
+        name='user'
     ),
 ]

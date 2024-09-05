@@ -33,13 +33,18 @@ class LoginUserSerializer(serializers.Serializer):
         model = User
         fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.Serializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+class UserResSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'first_name', 'last_name', 'username', 'role', 'profile_picture', 'uuid', 'max_streak', 'groups', 'user_permissions', 'badges')
 
 class TokenUserSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserResSerializer()
 
     class Meta:
         model = Token
