@@ -1,7 +1,6 @@
 import uuid
 
 from django.db import models
-from helpers.s3 import UploadFileTo
 
 class Badge(models.Model):
     UPLOAD_TO = 'badge'
@@ -12,7 +11,7 @@ class Badge(models.Model):
     )
 
     icon = models.ImageField(
-        upload_to=UploadFileTo(UPLOAD_TO, 'badge-icon'),
+        upload_to='badge-icon/',
         null=True,
         blank=True,
     )
@@ -99,7 +98,7 @@ class Streak(models.Model):
     )
     
     background_picture = models.ImageField(
-        upload_to=UploadFileTo(UPLOAD_TO, 'streak-background'),
+        upload_to='streak-background/',
         null=True,
         blank=True,
     )

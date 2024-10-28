@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Group, Permission
-from helpers.s3 import UploadProfilePictureTo, OverwriteStorage
 from django.utils import timezone
 
 from streaks.models import Badge, Streak
@@ -82,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
         default=UserRole.DEFAULT
     )
-    
+
     profile_picture = models.ImageField(
         upload_to=user_profile_picture_path,
         null=True,

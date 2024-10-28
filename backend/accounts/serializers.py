@@ -4,6 +4,7 @@ from django.utils.crypto import get_random_string
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import SerializerMethodField
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 from accounts.models import *
 from helpers.email import send_signup_confirmation_email
@@ -70,7 +71,8 @@ class UserProfilePictureSerializer(serializers.ModelSerializer):
         return instance
       
     def get_profile_picture_path(self, instance: User):
-        return str(instance.profile_picture)
+        base_pub_url = getattr(settings, 'BASE_PUBLIC_URL', '')
+        return f"{base_pub_url}{str(instance.profile_picture)}"
 
     class Meta:
         model = User
