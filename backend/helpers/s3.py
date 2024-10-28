@@ -30,7 +30,6 @@ class UploadProfilePictureTo(object):
             '{0}-{1}'.format(instance.uuid, self.sufix),
             filename_ext.lower(),
         )
-        print(name, filename_ext.lower())
         return name
     
 class OverwriteStorage(S3Boto3Storage):

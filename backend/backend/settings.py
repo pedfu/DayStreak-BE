@@ -10,6 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = ''
+
 from pathlib import Path
 from os import path
 import os
@@ -28,12 +31,6 @@ EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 EMAIL_HOST_USER = 'be52c0165cb93d'
 EMAIL_HOST_PASSWORD = 'b71c618bd9ab09'
 EMAIL_PORT = '2525'
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e!$41lp!g+=g2o@^afi2j6q02dwla3!$t!-95j!e6c^x3i3o)+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -55,6 +52,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'streaks',
+    'storages',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -96,7 +94,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -144,21 +142,12 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Default file storage
-DEFAULT_FILE_STORAGE = 'backend.storage_backend.MediaStorage'
+# Configurações do Cloudflare R2
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_STORAGE_BUCKET_NAME = ''
+AWS_S3_ENDPOINT_URL = ''  # Endpoint personalizado para R2
+AWS_S3_CUSTOM_DOMAIN = ""
 
-# AWS S3 settings
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')  # Replace with your region
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-
-# Static and media files
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+# Configura o Django para usar o R2 como armazenamento padrão para arquivos de mídia
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

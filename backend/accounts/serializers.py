@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from django.utils.crypto import get_random_string
 from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import SerializerMethodField
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import *
@@ -56,7 +57,7 @@ class UserBadgesSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'icon', 'rarity')
 
 class UserProfilePictureSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.ImageField(required=True)
+    profile_picture_path = SerializerMethodField()
 
     def validate(self, attrs):
         if not attrs.get('profile_picture'):
@@ -68,9 +69,12 @@ class UserProfilePictureSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
       
+    def get_profile_picture_path(self, instance: User):
+        return str(instance.profile_picture)
+
     class Meta:
         model = User
-        fields = ['profile_picture']  
+        fields = ('profile_picture', 'profile_picture_path') 
         
 class NotificationsSerializer(serializers.ModelSerializer):
 

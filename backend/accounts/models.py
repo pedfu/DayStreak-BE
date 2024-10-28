@@ -6,6 +6,7 @@ from django.utils import timezone
 from streaks.models import Badge, Streak
 
 import uuid
+import os
 
 class UserManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, username, password):
@@ -27,6 +28,11 @@ class UserManager(BaseUserManager):
         user_obj.set_password(password)
         user_obj.save(using=self._db)
         return user_obj
+
+def user_profile_picture_path(instance, filename):
+    extension = os.path.splitext(filename)[1]
+    new_filename = f"profile-picture-{instance.uuid}{extension}"
+    return f"profile_pictures/{new_filename}"
 
 class User(AbstractBaseUser, PermissionsMixin):
     UPLOAD_TO = 'user'
@@ -76,12 +82,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=UserRole.choices,
         default=UserRole.DEFAULT
     )
-
+    
     profile_picture = models.ImageField(
-        upload_to=UploadProfilePictureTo(UPLOAD_TO, 'profile-picture'),
+        upload_to=user_profile_picture_path,
         null=True,
         blank=True,
-        storage=OverwriteStorage()
     )
 
     uuid = models.UUIDField(
@@ -118,12 +123,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
 
+    notification_token = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+
     badges = models.ManyToManyField(
         Badge,
         blank=True,
         null=True,
         related_name='user_badges'
     )
+
+    def save(self, *args, **kwargs):
+        if self.id:
+            old_user = User.objects.get(id=self.id)
+            if old_user.profile_picture and old_user.profile_picture != self.profile_picture:
+                old_user.profile_picture.delete(save=False)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username
