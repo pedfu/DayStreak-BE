@@ -88,6 +88,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
 
+    profile_picture_path = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+
     uuid = models.UUIDField(
         default=uuid.uuid4,
         editable=False,

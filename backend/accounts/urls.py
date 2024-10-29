@@ -54,6 +54,11 @@ urlpatterns = [
         name='profile-picture'    
     ),
     path(
+        'user/notification-token/',
+        views.UserNotificationTokenView.as_view(),
+        name='notification-token'
+    ),
+    path(
         'user/',
         views.UserView.as_view(),
         name='user'

@@ -49,7 +49,7 @@ class LoginView(APIView):
                     return Response({'error': 'You need to confirm your email'}, status=status.HTTP_400_BAD_REQUEST)
                 token, _ = Token.objects.get_or_create(user=user)
                 token_user_serializer = TokenUserSerializer(token)
-                return Response(token_user_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(token_user_serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class LogoutView(APIView):
@@ -96,6 +96,22 @@ class UpdateUserProfilePictureView(APIView):
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+class UserNotificationTokenView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if isinstance(request.data, QueryDict):
+            data = request.data.dict()
+        else:
+            data = request.data
+        
+        user = User.objects.get(id=request.user.id)
+        user.notification_token = data['token']
+        user.save()
+        return Response({}, status=status.HTTP_200_OK)
+    
 class UserNotificationsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -119,7 +135,7 @@ class UserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = User.objects.filter(id=request.user.id)
+        user = User.objects.filter(id=request.user.id).first()
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     

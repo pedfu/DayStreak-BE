@@ -9,6 +9,8 @@ from django.conf import settings
 from accounts.models import *
 from helpers.email import send_signup_confirmation_email
 
+base_pub_url = getattr(settings, 'BASE_PUBLIC_URL', '')
+
 class SignUpUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
@@ -35,10 +37,10 @@ class LoginUserSerializer(serializers.Serializer):
         model = User
         fields = '__all__'
 
-class UserSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('id', 'email', 'first_name', 'last_name', 'username', 'role', 'profile_picture_path', 'uuid', 'max_streak', 'groups', 'user_permissions', 'badges')
 
 class UserResSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,7 +60,7 @@ class UserBadgesSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'icon', 'rarity')
 
 class UserProfilePictureSerializer(serializers.ModelSerializer):
-    profile_picture_path = SerializerMethodField()
+    profile_picture = serializers.ImageField(required=True)
 
     def validate(self, attrs):
         if not attrs.get('profile_picture'):
@@ -66,13 +68,13 @@ class UserProfilePictureSerializer(serializers.ModelSerializer):
         return self.initial_data
         
     def update(self, instance, validated_data):
-        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.profile_picture = picture
+
+        extension = str(picture).split('.')[-1]
+        instance.profile_picture_path = f"{base_pub_url}profile_pictures/profile-picture-{instance.uuid}.{extension}"
         instance.save()
         return instance
-      
-    def get_profile_picture_path(self, instance: User):
-        base_pub_url = getattr(settings, 'BASE_PUBLIC_URL', '')
-        return f"{base_pub_url}{str(instance.profile_picture)}"
 
     class Meta:
         model = User
