@@ -46,6 +46,8 @@ class Streak(models.Model):
     UPLOAD_TO = 'streak'
     class StreakStatus(models.TextChoices):
         ACTIVE = 'active',
+        DAY_COMPLETED = 'day_completed',
+        DONE = 'done',
         PAUSED = 'paused',
         DELETED = 'deleted',
     
@@ -67,6 +69,11 @@ class Streak(models.Model):
     )
 
     end_date = models.DateField(
+        null=True,
+        blank=False
+    )
+
+    goal_deadline = models.DateField(
         null=True,
         blank=False
     )

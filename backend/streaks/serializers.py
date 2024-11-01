@@ -27,6 +27,8 @@ class StreakSerializer(serializers.ModelSerializer):
     duration_days = SerializerMethodField()
     background_picture = SerializerMethodField()
     local_background_picture = SerializerMethodField()
+    min_time_per_day = SerializerMethodField()
+    goal_deadline = SerializerMethodField()
 
     def validate(self, attrs):
         background = self.context.get('background') 
@@ -57,6 +59,7 @@ class StreakSerializer(serializers.ModelSerializer):
         category_id = validated_data.get('category_id')
         min_time_per_day = validated_data.get('min_time_per_day') or 0
         local_background_picture = validated_data.get('local_background_picture')
+        goal_deadline = validated_data.get('goal_deadline')
 
         category = StreakCategory.objects.filter(id=category_id).first()
         streak = Streak.objects.create(
@@ -64,9 +67,10 @@ class StreakSerializer(serializers.ModelSerializer):
             duration_days=streak_duration_days, 
             description=streak_description, 
             end_date=end_date,
-            min_time_per_day=min_time_per_day,
             background_picture=background,
             local_background_picture=local_background_picture,
+            min_time_per_day=min_time_per_day,
+            goal_deadline=goal_deadline,
             created_by=user)
         user_streak = UserStreak.objects.create(user=user, streak=streak, category=category)
         return user_streak
@@ -78,6 +82,8 @@ class StreakSerializer(serializers.ModelSerializer):
         instance.streak.duration_days = validated_data.get('duration_days', instance.streak.duration_days)
         instance.streak.background_picture = validated_data.get('background', instance.streak.background_picture)
         instance.streak.local_background_picture = validated_data.get('local_background_picture', instance.streak.local_background_picture)
+        instance.streak.goal_deadline = validated_data.get('goal_deadline', instance.streak.goal_deadline)
+        instance.streak.min_time_per_day = validated_data.get('min_time_per_day', instance.streak.min_time_per_day)
         
         instance.streak.save()
 
@@ -115,13 +121,19 @@ class StreakSerializer(serializers.ModelSerializer):
     def get_local_background_picture(self, instance: UserStreak):
         return instance.streak.local_background_picture
 
+    def get_min_time_per_day(self, instance: UserStreak):
+        return instance.streak.min_time_per_day or 0
+
+    def get_goal_deadline(self, instance: UserStreak):
+        return instance.streak.goal_deadline
+
     def get_background_picture(self, instance: UserStreak):
         background_picture = instance.streak.background_picture or None
         return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
     
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'local_background_picture', 'background_picture')
+        fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'local_background_picture', 'min_time_per_day', 'goal_deadline', 'background_picture')
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -140,6 +152,8 @@ class UserStreakSerializer(serializers.ModelSerializer):
     status = SerializerMethodField()
     background_picture = SerializerMethodField()
     local_background_picture = SerializerMethodField()
+    min_time_per_day = SerializerMethodField()
+    goal_deadline = SerializerMethodField()
     max_streak = SerializerMethodField()
 
     def get_id(self, instance: UserStreak):
@@ -170,13 +184,19 @@ class UserStreakSerializer(serializers.ModelSerializer):
     def get_local_background_picture(self, instance: UserStreak):
         return instance.streak.local_background_picture
 
+    def get_min_time_per_day(self, instance: UserStreak):
+        return instance.streak.min_time_per_day
+
+    def get_goal_deadline(self, instance: UserStreak):
+        return instance.streak.goal_deadline
+
     def get_max_streak(self, instance: UserStreak):
         # FAZER DPS
         return 1
 
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'local_background_picture', 'max_streak')
+        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'min_time_per_day', 'goal_deadline', 'local_background_picture', 'max_streak')
 
 class UserStreakCountSerializer(serializers.ModelSerializer):
     id = SerializerMethodField()
@@ -252,6 +272,12 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
     def get_local_background_picture(self, instance: UserStreak):
         return instance.streak.local_background_picture
 
+    def get_goal_deadline(self, instance: UserStreak):
+        return instance.streak.goal_deadline
+
+    def get_min_time_per_day(self, instance: UserStreak):
+        return instance.streak.min_time_per_day
+
     def get_background_picture(self, instance: UserStreak):
         background_picture = instance.streak.background_picture or None
         return instance.streak.background_picture.url if hasattr(background_picture, 'url') else background_picture
@@ -262,7 +288,7 @@ class UserStreakCountSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserStreak
-        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'local_background_picture', 'max_streak')
+        fields = ('id', 'name', 'category', 'duration_days', 'description', 'created_by', 'user_streak_id', 'status', 'background_picture', 'min_time_per_day', 'goal_deadline', 'local_background_picture', 'max_streak')
         # fields = ('id', 'name', 'description', 'duration_days', 'user_streak_id', 'category', 'day_streak', 'tracks')
 
 class StreakTrackSerializer(serializers.ModelSerializer):
